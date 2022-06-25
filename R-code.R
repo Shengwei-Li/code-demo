@@ -55,12 +55,13 @@ for(i in 1:length(project)){
   d=dist(df,method = "euclidean")   # dist() - Calculate the Euclidean distance between samples
   sample.hc = hclust(d,method="ward.D2")
   sample.id <- cutree(sample.hc,3)   #k=3
-  write.csv(sample.id,paste0(project[i],"_cluster.csv"))
-
-  b = read.csv(paste0(project[i],"_cluster.csv"),stringsAsFactor=FALSE)
-  b[,2] = paste("cluster",b[,2],sep = "")
-  anno_col = data.frame(cluster=factor(b[,2]))
-  rownames(anno_col)=as.character(b[,1])
+ 
+  sample.id = as.data.frame(sample.id)
+  sample.id = data.frame(X = row.names(sample.id),x = sample.id[,1])
+  
+  sample.id[,2] = paste("cluster",sample.id[,2],sep = "")
+  anno_col = data.frame(cluster=factor(sample.id[,2]))
+  rownames(anno_col)=as.character(sample.id[,1])
   ann_colors = list(cluster = c(cluster1 = "#80B1D3", cluster2="#FDB462",cluster3="#FB8072"))
   pdf(paste0(project[i],"_heatmap.pdf"),width=8,height=15)
   heatmap = pheatmap(ssgsea,scale = 'row',cellheight = 12,show_colnames = FALSE,color=colorRampPalette(c("blue2", "white", "red"))(20),legend=F,
