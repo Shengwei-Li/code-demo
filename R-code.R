@@ -99,7 +99,7 @@ compare_immune_activity = function(project,x,y){
       pv = rbind(pv,pv2)
       rownames(pv) = NULL
     }
-    ord = order(as.numeric(pv[,4]),decreasing=FALSE)
+    ord = order(as.numeric(pv[,"pvL"]),decreasing=FALSE)
     pvalue1 = pv[ord,]
     fdr = rep(1,dim(pvalue1)[1]); for(n in 1:dim(pvalue1)[1]) fdr[n]<-as.numeric(pvalue1[n,4])*dim(pvalue1)[1]/n
     pv2 = cbind(pvalue1,fdr)
