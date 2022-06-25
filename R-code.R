@@ -1,11 +1,6 @@
 
-# Introduction
-# Author: Shengwei Li (22 June 2022, 11pm)
-# >>> 8 - 186     A part of the data analysis process code in the research project of molecular subtyping of breast cancer.
-# >>> 190 - 298   An R package developed based on the KNN algorithm in the research project of HPV-positive CESC.
-# >>> 300 - 812   the part of the code of visualisation in the research project of molecular subtyping of breast cancer. 
 
-# ssgsea + hierarchical clustering + visualization -------------------------------------------------
+# GSVA + hierarchical clustering + heatmap -------------------------------------------------
 rm(list = ls())
 library(GSVA)
 library(estimate)
