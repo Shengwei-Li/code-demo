@@ -73,112 +73,51 @@ for(i in 1:length(project)){
 
 ####################   Mann–Whitney U test (the data are non-normally distributed), Student’s t test (the data are normally distributed)
 
-### wilcox cluster1 vs cluster2
-
 rm(list=ls())
 
 project = c("METABRIC","TCGA","GSE24450","GSE2034","GSE11121")
 
-result = c()
-
-for(i in 1:length(project)){
-  ki = read.table(paste0("./toy data/",project[i],"_scores.txt"),sep = "\t")
-  rownames(ki) = gsub(rownames(ki),pattern = ".",replacement = "-",fixed = TRUE)
-  cluster = read.csv(paste0(project[i],"_cluster.csv"))
-  cluster[,1] = gsub(cluster[,1],pattern = ".",replacement = "-",fixed = TRUE)
-  cordata = merge(cluster,ki,by.x="X",by.y="row.names")
-  pv = c()
-  for(f in 3:dim(cordata)[2]){
-    pos1 = which(cordata[,2] == 1)
-    pos2 = which(cordata[,2] == 2)
-    pos3 = which(cordata[,2] == 3)
-    #wilcox
-    pvG = wilcox.test(as.numeric(cordata[,f])[pos1],as.numeric(cordata[,f])[pos2],alternative = "greater")$p.value
-    pvL = wilcox.test(as.numeric(cordata[,f])[pos1],as.numeric(cordata[,f])[pos2],alternative = "less")$p.value
-    pv2 = cbind(project[i],colnames(cordata)[f],pvG,pvL)
-    pv = rbind(pv,pv2)
-    rownames(pv) = NULL
+compare_immune_activity = function(project,x,y){
+  # Parameter x and parameter y are the results of hierarchical clustering
+  if (missing(project) || missing(x) || missing(y) || !is.numeric(c(x,y)))
+    stop("'parameter' is missing or incorrect")
+  
+  result = c()
+  
+  for(i in 1:length(project)){
+    ki = read.table(paste0("./toy data/",project[i],"_scores.txt"),sep = "\t")
+    rownames(ki) = gsub(rownames(ki),pattern = ".",replacement = "-",fixed = TRUE)
+    cluster = read.csv(paste0(project[i],"_cluster.csv"))
+    cluster[,1] = gsub(cluster[,1],pattern = ".",replacement = "-",fixed = TRUE)
+    cordata = merge(cluster,ki,by.x="X",by.y="row.names")
+    pv = c()
+    for(f in 3:dim(cordata)[2]){
+      #wilcox
+      pvG = wilcox.test(as.numeric(cordata[,f])[which(cordata[,2] == x)],as.numeric(cordata[,f])[which(cordata[,2] == y)],alternative = "greater")$p.value
+      pvL = wilcox.test(as.numeric(cordata[,f])[which(cordata[,2] == x)],as.numeric(cordata[,f])[which(cordata[,2] == y)],alternative = "less")$p.value
+      pv2 = cbind(project[i],colnames(cordata)[f],pvG,pvL)
+      pv = rbind(pv,pv2)
+      rownames(pv) = NULL
+    }
+    ord = order(as.numeric(pv[,4]),decreasing=FALSE)
+    pvalue1 = pv[ord,]
+    fdr = rep(1,dim(pvalue1)[1]); for(n in 1:dim(pvalue1)[1]) fdr[n]<-as.numeric(pvalue1[n,4])*dim(pvalue1)[1]/n
+    pv2 = cbind(pvalue1,fdr)
+    colnames(pv2) = c("project","ESTIMATE","pvG","pvL","fdr")
+    result=rbind(result,pv2)
   }
-  ord = order(as.numeric(pv[,4]),decreasing=FALSE)
-  pvalue1 = pv[ord,]
-  fdr = rep(1,dim(pvalue1)[1]); for(n in 1:dim(pvalue1)[1]) fdr[n]<-as.numeric(pvalue1[n,4])*dim(pvalue1)[1]/n
-  pv2 = cbind(pvalue1,fdr)
-  colnames(pv2) = c("project","ESTIMATE","pvG","pvL","fdr")
-  result=rbind(result,pv2)
+  result = as.data.frame(result)
+  write.csv(result,paste0(x,"-",y,"_wilcox.csv"),row.names = FALSE)
 }
-result = as.data.frame(result)
-write.csv(result,"1-2_wilcox.csv")
+
+### wilcox cluster1 vs cluster2
+compare_immune_activity(project,1,2)
 
 
 ### wilcox cluster1 vs cluster3
-
-rm(list=ls())
-
-project = c("METABRIC","TCGA","GSE24450","GSE2034","GSE11121")
-
-result = c()
-
-for(i in 1:length(project)){
-  ki = read.table(paste0("./toy data/",project[i],"_scores.txt"),sep = "\t")
-  rownames(ki) = gsub(rownames(ki),pattern = ".",replacement = "-",fixed = TRUE)
-  cluster = read.csv(paste0(project[i],"_cluster.csv"))
-  cluster[,1] = gsub(cluster[,1],pattern = ".",replacement = "-",fixed = TRUE)
-  cordata = merge(cluster,ki,by.x="X",by.y="row.names")
-  pv = c()
-  for(f in 3:dim(cordata)[2]){
-    pos1 = which(cordata[,2] == 1)
-    pos2 = which(cordata[,2] == 2)
-    pos3 = which(cordata[,2] == 3)
-    #wilcox
-    pvG = wilcox.test(as.numeric(cordata[,f])[pos1],as.numeric(cordata[,f])[pos3],alternative = "greater")$p.value
-    pvL = wilcox.test(as.numeric(cordata[,f])[pos1],as.numeric(cordata[,f])[pos3],alternative = "less")$p.value
-    pv2 = cbind(project[i],colnames(cordata)[f],pvG,pvL)
-    pv = rbind(pv,pv2)
-    rownames(pv) = NULL
-  }
-  ord = order(as.numeric(pv[,4]),decreasing=FALSE)
-  pvalue1 = pv[ord,]
-  fdr = rep(1,dim(pvalue1)[1]); for(n in 1:dim(pvalue1)[1]) fdr[n]<-as.numeric(pvalue1[n,4])*dim(pvalue1)[1]/n
-  pv2 = cbind(pvalue1,fdr)
-  colnames(pv2) = c("project","ESTIMATE","pvG","pvL","fdr")
-  result=rbind(result,pv2)
-}
-result = as.data.frame(result)
-write.csv(result,"1-2_wilcox.csv")
-
+compare_immune_activity(project,1,3)
 
 ### wilcox cluster2 vs cluster3
+compare_immune_activity(project,2,3)
 
-rm(list=ls())
 
-project = c("METABRIC","TCGA","GSE24450","GSE2034","GSE11121")
-
-result = c()
-
-for(i in 1:length(project)){
-  ki = read.table(paste0("./toy data/",project[i],"_scores.txt"),sep = "\t")
-  rownames(ki) = gsub(rownames(ki),pattern = ".",replacement = "-",fixed = TRUE)
-  cluster = read.csv(paste0(project[i],"_cluster.csv"))
-  cluster[,1] = gsub(cluster[,1],pattern = ".",replacement = "-",fixed = TRUE)
-  cordata = merge(cluster,ki,by.x="X",by.y="row.names")
-  pv = c()
-  for(f in 3:dim(cordata)[2]){
-    pos1 = which(cordata[,2] == 1)
-    pos2 = which(cordata[,2] == 2)
-    pos3 = which(cordata[,2] == 3)
-    #wilcox
-    pvG = wilcox.test(as.numeric(cordata[,f])[pos2],as.numeric(cordata[,f])[pos3],alternative = "greater")$p.value
-    pvL = wilcox.test(as.numeric(cordata[,f])[pos2],as.numeric(cordata[,f])[pos3],alternative = "less")$p.value
-    pv2 = cbind(project[i],colnames(cordata)[f],pvG,pvL)
-    pv = rbind(pv,pv2)
-    rownames(pv) = NULL
-  }
-  ord = order(as.numeric(pv[,4]),decreasing=FALSE)
-  pvalue1 = pv[ord,]
-  fdr = rep(1,dim(pvalue1)[1]); for(n in 1:dim(pvalue1)[1]) fdr[n]<-as.numeric(pvalue1[n,4])*dim(pvalue1)[1]/n
-  pv2 = cbind(pvalue1,fdr)
-  colnames(pv2) = c("project","ESTIMATE","pvG","pvL","fdr")
-  result=rbind(result,pv2)
-}
-result = as.data.frame(result)
-write.csv(result,"2-3_wilcox.csv")
