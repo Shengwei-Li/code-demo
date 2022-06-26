@@ -7,7 +7,7 @@ library(estimate)
 library(pheatmap)
 
 # Read in immune gene sets
-genesets = read.csv("./toy data/immune signatures.csv", stringsAsFactors = FALSE,header = FALSE)
+genesets = read.csv("./data/immune_signatures.csv", stringsAsFactors = FALSE,header = FALSE)
 genesets = as.data.frame(t(genesets))
 geneSet=c()  
 
@@ -24,7 +24,7 @@ for(i in 1:dim(genesets)[1]){
 project = c("TCGA","METABRIC","GSE24450","GSE11121","GSE2034")
 
 for(i in 1:length(project)){
-  rna_seq = read.csv(paste0("./toy data/",project[i],"_expr.csv"),stringsAsFactors = F,header = T,check.names = F,row.names = 1)
+  rna_seq = read.csv(paste0("./data/",project[i],"_expr.csv"),stringsAsFactors = F,header = T,check.names = F,row.names = 1)
   rna_seq = as.matrix(rna_seq)
   res = gsva(rna_seq,geneSet,method="ssgsea",ssgsea.norm = TRUE,verbose = TRUE)
   colnames(res) = gsub(colnames(res),pattern=".",replacement="-",fixed = TRUE)
@@ -51,12 +51,8 @@ for(i in 1:length(project)){
   sample.hc = hclust(d,method="ward.D2")
   sample.id <- cutree(sample.hc,3)   #k=3
  
-  sample.id = as.data.frame(sample.id)
-  sample.id = data.frame(X = row.names(sample.id),x = sample.id[,1])
-  
-  sample.id[,2] = paste("cluster",sample.id[,2],sep = "")
-  anno_col = data.frame(cluster=factor(sample.id[,2]))
-  rownames(anno_col)=as.character(sample.id[,1])
+  anno_col = data.frame(cluster=factor(paste0("cluster",sample.id)))
+  rownames(anno_col)=as.character(names(sample.id))
   ann_colors = list(cluster = c(cluster1 = "#80B1D3", cluster2="#FDB462",cluster3="#FB8072"))
   pdf(paste0(project[i],"_heatmap.pdf"),width=8,height=15)
   heatmap = pheatmap(ssgsea,scale = 'row',cellheight = 12,show_colnames = FALSE,color=colorRampPalette(c("blue2", "white", "red"))(20),legend=F,
