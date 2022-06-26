@@ -77,7 +77,7 @@ compare_immune_activity = function(project,x,y){
   result = c()
   
   for(i in 1:length(project)){
-    ki = read.table(paste0("./toy data/",project[i],"_scores.txt"),sep = "\t")
+    ki = read.table(paste0("./data/",project[i],"_scores.txt"),sep = "\t")
     rownames(ki) = gsub(rownames(ki),pattern = ".",replacement = "-",fixed = TRUE)
     cluster = read.csv(paste0(project[i],"_cluster.csv"))
     cluster[,1] = gsub(cluster[,1],pattern = ".",replacement = "-",fixed = TRUE)
