@@ -49,10 +49,10 @@ for(i in 1:length(project)){
   df=scale(t(ssgsea)) 
   d=dist(df,method = "euclidean")   # dist() - Calculate the Euclidean distance between samples
   sample.hc = hclust(d,method="ward.D2")
-  sample.id <- cutree(sample.hc,3)   #k=3
+  sample.id = cutree(sample.hc,3)   #k=3
  
   anno_col = data.frame(cluster=factor(paste0("cluster",sample.id)))
-  rownames(anno_col)=as.character(names(sample.id))
+  rownames(anno_col) = names(sample.id)
   ann_colors = list(cluster = c(cluster1 = "#80B1D3", cluster2="#FDB462",cluster3="#FB8072"))
   pdf(paste0(project[i],"_heatmap.pdf"),width=8,height=15)
   heatmap = pheatmap(ssgsea,scale = 'row',cellheight = 12,show_colnames = FALSE,color=colorRampPalette(c("blue2", "white", "red"))(20),legend=F,
